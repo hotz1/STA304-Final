@@ -1,0 +1,823 @@
+---
+title: "Taking Offense"
+subtitle: "The Evolution of NFL Offenses throughout the NFL's Post-Merger Era"
+author: "Joseph Hotz - 1005953354"
+date: "December 20, 2021"
+output: 
+  pdf_document: default
+header-includes:
+  - \usepackage{hyperref}
+  - \hypersetup{colorlinks=true, linkcolor=cyan, filecolor=magenta, urlcolor=blue}
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(broom)
+library(nflfastR)
+library(rdrobust)
+library(reshape)
+
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+# Abstract
+
+In the recent history of the National Football League (NFL), the league has implemented certain rules which are meant to boost offensive production across the league, and make football games more exciting for viewers. These rule changes have been criticized by critics who believe that the NFL is making the game too easy for offensive players, while unfairly making the role of defensive players more difficult. Over the past 20 years, the NFL has seen a massive explosion in terms of offensive players' season-long stats, and a handful of rule changes over the past 50 years have been credited for these trends of increase among NFL offenses. Using regression discontinuity design models, we examine 51 NFL seasons' worth of data from [Pro Football Reference](https://www.pro-football-reference.com/) to determine how these specific rule changes have affected NFL teams' offensive capabilities by comparing the performance of teams before and after the implementation of these rules. We find that each of the rules which we examined has had a significant affect on some aspects of NFL offensive production which cannot be attributed to natural year-over-year changes alone. Our results indicate that the NFL succeeded in implementing new rules to bolster their offenses, as the offensive production metrics which we study have been affected directly by the implementation of these new rules. 
+
+## Key Words
+
+* National Football League
+* Quarterbacks
+* Regression discontinuity design
+* Historical comparisons
+
+# Introduction
+
+The National Football League (NFL) is one of the most popular professional sports leagues in the world, and it is the most popular sports league in North America. The Super Bowl, which is the NFL's championship match, is often the highest-watched event on television in the United States every single year (Nielsen, 2020).
+
+Throughout the history of the National Football League, and football as an organized sport prior to the formation of the league, football teams have developed new offensive schemes and strategies to overcome opposing teams' defenses, and these defenses will in turn implement new strategies to prevent their opponents from scoring points (Ruiz, 2019). This cycle of innovations creates a 'chess match' between NFL offenses and defenses, where each side creates new strategies to overcome their opponents.
+
+Like other sports leagues, the NFL's rules have adapted over time to change the way that the game is played. Most of the NFL's largest rule changes were instituted by the league for one of three reasons; enhancing competitive integrity in the league, making the game safer for the players, or to make the games more interesting for viewers (Cunningham, 2017; NFL Football Operations, 2021).
+
+As the legendary college football coach Bear Bryant once said, "Offense sells tickets, but defense wins championships." (Barnett, 2021). In order to increase fans' interest in football games, the NFL has tailored the rules in order to increase offensive production league-wide and improve NFL viewership (Brady, 1978; Craft, 2014; NFL Football Operations, 2021). 
+
+In particular, there have been two separate occasions in the past 50 years where the NFL has changed the league's rules to explicitly increase scoring and bolster offensive production. The first was the NFL's creation of the illegal contact rule in 1978, sometimes referred to as the "Mel Blount Rule" (DeArdo, 2019), which was implemented to boost the role of passing in the league's offenses (Brady, 1978; Craft, 2014). This rule prevented defensive players from making physical contact with receivers who were more than five yards away from the line of scrimmage before the ball had been thrown. As a result, NFL defensive players could not play as physically when trying to prevent a receiver from catching football thrown to them (DeArdo, 2019). This rule was meant to make longer "downfield" passes less risky for a team, as this rule would reduce the likelihood of the pass being marked incomplete or intercepted by a defensive player.
+
+The second of these rule changes occurred in 1994, when the league's Competition Committee introduced a slew of changes to explicitly boost offensive production (NFL Football Operations, 2021) in an attempt to help the NFL compete with the surging popularity of the NBA (National Basketball Association)in North America (Craft, 2014).
+
+As mentioned above, another major impetus for the NFL to change their rules is to prevent injuries and prioritize player safety.
+In particular, these safety-emphasizing rules have often served to protect quarterbacks, as they are often faces of their respective teams, as well as the National Football League as a whole (Cunningham, 2017).
+
+During the first week of the 2008 NFL season, reigning league MVP Tom Brady was tackled by Bernard Pollard, and sustained injuries to his ACL and MCL, which prevented him from playing again for the remainder of the season (Springer, 2008; Pro Football Reference, 2021). Although Tom Brady made a full recovery after the injury, the NFL changed the rules at the end of the 2008 season (Gasper, 2009) in order to protect quarterbacks and prevent similar injuries from occurring in the future. The so-called "Brady Rule" (Foster, 2009) was created in order to protect the league's quarterbacks, who are their "star players", according to New England Patriots owner Robert Kraft (Gasper, 2009).
+
+Although it was implemented as a safety measure, the "Brady Rule" has sparked massive increases in quarterback production across the National Football League. The rule gave limitations on the ways in which a defensive player could 'legally' tackle a quarterback who has yet to throw the ball. As a result, NFL quarterbacks can wait longer in the 'pocket' before passing the football, and they can also pass more frequently per game (Cunningham, 2017), as passing frequently poses less of an injury risk than it did before the rule was implemented. The rule has resulted in quarterbacks having longer careers and it has created prolific passing offenses which would not have been as successful in previous eras of the NFL (Foster, 2009; Cunningham, 2017).
+
+For example, throughout the history of the history of the National Football League, there have been a total of 12 instances in which a quarterback has thrown for more than 5000 passing yards in a single season (Pro Football Reference, 2021).
+
+The 5000-yard passing threshold was reached for the first time during Hall-of-Famer Dan Marino's historic 1984 season as the quarterback of the Miami Dolphins (Pro Football Reference, 2021), and it was not achieved for another 24 years, when Drew Brees passed for 5069 yards during the 2008 season. Since then, there have been 10 more occurrences of an NFL quarterback throwing for over 5000 yards in a single season (Pro Football Reference, 2021), despite this record having only been broken twice in the  league's history prior to 2009. 
+
+In this report, we will examine the evolution of NFL offenses throughout the history of the league, dating back to the merger between the AFL (American Football League) and the NFL (National Football League) prior to the start of the 1970 season. In particular, the guiding question behind our research is **how have changes to the NFL's rules over time improved teams' offensive production metrics?** 
+
+To answer this question, we will examine NFL teams' per-game offensive statistics, including their passing yardage, rushing yardage, and their overall number of points scored throughout each season of the post-merger era of the NFL (the 1970 NFL season and beyond), to determine how changes to the NFL's rules have affected the overall performance of NFL offenses. The NFL tends to implement rule changes during its off-season (NFL Football Operations, 2021), so there is a 'hard cutoff' between seasons where a given NFL rule is a part of the league's rulebook or not. 
+
+We will split the 'post-merger era' of the NFL into four distinct timeframes, based on the changes to the rules which have affected offensive production since the 1970 season. We chose the following 'cutoffs' to bookend the four eras of the NFL which we are examining, based on the major rule changes described above.
+
+* 1970: The AFL and NFL merge together to form a singular football league.
+* 1978: The NFL introduces the "Mel Blount Rule", limiting contact between receivers and defensive players prior to the football being thrown. 
+* 1994: The NFL's Competition Committee introduces new rules to increase offensive production among NFL teams.
+* 2009: The NFL implements the "Brady Rule" to prevent injuries to quarterbacks.
+* 2020: The most recently-completed NFL season.
+
+To determine the effects of the three major rule changes listed above, we will use regression discontinuity designs to determine if the changes in NFL teams' offensive production can be explained by trends which remain similar across these four eras, or if these rule changes correspond to differences in total offensive production. 
+
+We hypothesize that each of the three rule changes shown above have contributed to creating a more 'passer-friendly' league; as we believe each of these rule changes have caused NFL offenses to become more reliant on gaining yardage through passing plays, and that the efficiency of these passing plays will also increase over time as the league has adapted since the 1970 season.
+
+The information which we will collect and examine in this report can also be used to determine how NFL defenses can best adapt to the changes which have been made by the NFL, to help bring more of a balance between the offenses in the league and their opponents' defenses. This information can also be use to help derive comparisons between NFL offenses over time, as these results can be used to determine the capability of an NFL team's offense in a given NFL season relative to the other offenses in the league, and relative to the rules which benefited offensive production at the time.
+
+The data which we will examine are the per-game and per-play averages of each individual NFL team over a season, based on their total offensive production over an entire season's worth of regular season games. The main attributes of a team's offensive production which we will examine are the team's rushing statistics, their passing statistics, and the overall number of points scored by the team. We choose to examine per-play and per-game statistics rather than season-long statistics to determine the frequency and efficiency of these teams' plays, and to avoid biases in our results towards years in which NFL teams played a higher volume of games per season.
+
+The data which we will examine comes from [Pro Football Reference](https://www.pro-football-reference.com) (Sports Reference LLC, 2021), a free-to-use online database of NFL scores and statistics for teams and players throughout the league's history. We will collect the data from their website using the `sportsipy` Python API (Clark, 2018), and the data will then be analyzed using the R statistical programming language.
+
+# Football Information
+
+In this section, we have provided a brief overview of the rules of football, and information about how the game is played, for the benefit of readers who may be unfamiliar with terminology that will be used frequently throughout this report.
+
+## Rules of the Game
+
+The rules of football vary from league to league, and football leagues often change their rules over time, as discussed in the **Introduction** section. Despite these changes to the rules over time, the basics of NFL football have remained the same for decades (Fiorillo, 2018). 
+
+In the NFL, football is played on a grass or turf field which is 100 yards (300 feet) long, and 160 feet wide (Alder, 2019). Each team has 11 players on the field at any one time, but teams can have players on the bench who can be substituted in throughout the game (Goodell, 2021). Each team has a 10-yard endzone at one of the ends of the field, which serves as the other team's goal line.
+
+A game of football consists of 60 minutes of play, split into two 30-minute halves, which are further split into 15-minute quarters (Alder, 2019). Although there are only 60 minutes of play, NFL games tend to last closer to 3 hours, due to rest stoppages and time between consecutive plays (Alder, 2019).
+
+The objective of a game of football is to have more points than the opposing team at the end of the game (Goodell, 2021). The two main ways in which a football team can score points are through **touchdowns**, and **field goals**, although it is possible to earn points in other ways, such as a **safety**.
+
+A team scores a touchdown when a player on their team is in possession of the football while in the other team's endzone. A touchdown is worth 6 points, and upon scoring a touchdown, the scoring team can then attempt a **try** (Goodell, 2021), which is either worth 1 or 2 points, depending on what type of try the team attempts.
+
+A team can score a field goal if they kick the ball through the "uprights" - a U-shaped metal structure - in the other team's endzone. A successful field goal is worth 3 points for the kicking team (Alder, 2019).
+
+After a team scores points, they will then "kick off" to the other team, which will then be the team who has the football, and is attempting to score points by advancing down the field with the football (Alder, 2019). The team who has the football is the team on **offense**, whereas the team who is attempting to stop the offense from scoring is the **defense**.
+
+In order for the offense to continue progressing downfield, they must advance at least 10 yards in a **series of downs** (Alder, 2019). A series of downs begins with the **first down**, and a series has four downs in total. When a team earns a first down, a marker is placed 10 yards away from the position of the ball, and the team on offense must advance to that marker within the next four downs (Alder, 2019; Goodell, 2021). If the offense has advanced 10 yards in a series of downs, then they are granted a new **first down** (Goodell, 2021). If the team fails to advance 10 yards downfield in a series of downs, they will lose possession of the football, and the opposing team will go on offense (Alder, 2019). Multiple consecutive series of downs by one offense are often referred to as a **drive**.
+
+A **punt** is a play in which a player on offense drops the football, and then kicks the ball before the ball hits the ground (Goodell, 2021). When the ball is punted, a player on the other team can catch the punted ball and run with the ball, and their team will then be on offense. Punting plays often occur when the team on offense has the ball on fourth down, and they are too far away from the endzone to attempt a field goal. Punting is advantageous in these situations, as it means that the opposing team will start their drive further from your endzone. 
+
+At the start of each down, the players on offense will be on or behind the **line of scrimmage**, while all defensive players are at least one yard away from the line of scrimmage, on the other side of the line. The play begins when the center **snaps** the ball backwards to put the ball in play (Goodell, 2021). 
+
+For a play to end, the ball must be declared "dead" by a referee. This can occur in a variety of ways, such as a person with the football being knocked to the ground, if a person with the football cannot advance forward, if a penalty flag is thrown by a referee, or if a team scores points on the play (Goodell, 2021).
+
+## Terminology
+
+The following terms will appear frequently throughout this report:
+
+* **Offense:** The team which is in possession of the football, and is attempting to score points.
+* **Defense:** The team which is attempting to prevent the offense from scoring points.
+* **Down:** A 'down' represents a single play in a football game. In order to maintain their possession of the ball, a team must advance at least 10 yards within a series of four downs.
+* **Drive:** A consecutive string of plays on offense by one team is often referred to as a "drive" by the offense. 
+* **Rush:** A rush, also known as a run, is a play in which a player on offense is given the football and runs while carrying the football.
+* **Pass:** A pass is a play in which a player (typically the **quarterback**) throws the football to a player on their team.
+* **Yardage:** A team's yardage on offense on a given play represents the distance between the line of scrimmage at the start of the play, and the spot on the field where the play was marked "dead". Yardage can be positive or negative, depending on the outcome of a play.
+* **Interception:** An interception occurs when a player on offense throws the football to one of their teammates, but the ball is caught by a player on the other team's defense instead.
+* **Touchdown:** A touchdown is worth 6 points for the offense, and it occurs when a player on offense has possession of the ball in the opposing team's endzone. A touchdown can occur if a player is in the endzone and catches a football thrown to them (a *passing touchdown*), or it can occur if a player who is running with the football enters the endzone (a *rushing touchdown*).
+* **Quarterback:** A quarterback is the leader of the offense on the field. The quarterback tends to decide which play the offense will attempt on each down, and the quarterback is the main player responsible for throwing the football on pass attempts.
+* **Receiver:** A receiver is a player on offense whose main role is to catch the football when it is thrown to them by their quarterback. After catching the ball on a pass play, a receiver can run with the ball to advance it further. 
+* **Runningback:** A runningback is a player on offense whose main role is to run with the football on rushing plays.
+
+# Data
+
+## Data Collection
+
+The data which we analyzed in this report is a collection of each NFL team's offensive statistics for a given NFL season. The source of our data is [Pro Football Reference](https://www.pro-football-reference.com) (Sports Reference LLC, 2021), which is a free-to-use online database containing NFL statistics throughout the history of the league.
+
+To collect the data from Pro Football Reference, we used the `sportsipy` Python API (Clark, 2018) to retrieve information from the website pertaining to the data which we wanted to collect. In particular, for each NFL season from 1970 until 2020, we collected the cumulative seasonal statistics of each of the teams in the NFL who played during that season. After these statistics were collected using the `sportsipy` API, we compiled these 51 seasons' worth of information into a `pandas` dataframe in Python (pandas, 2021; NumFOCUS, 2021), and exported the data into a CSV format, before loading this CSV in R.
+
+We chose to not collect team statistics for the ongoing 2021 NFL season, since the seasonal totals corresponding to the 2021 NFL season would change multiple times per week, as the NFL's regular season does not end until January 9, 2022.
+
+## Data Cleaning
+
+The data which we collected from Pro Football Reference reflects the cumulative season statistics for each NFL team during a given NFL season.
+
+The initial data which we collected represents 41 different metrics for each NFL team in every season from 1970 to 2020, measured as cumulative totals over the team's entire season.
+
+As the purpose of this study is to determine how NFL rule changes have benefited NFL offenses, we eliminated the variables which were not directly associated with offensive production, such as teams' defensive metrics, their strength of schedule, average margin of victory, and their post-season results. This resulted in a smaller table, which only represented teams' offensive production over a given NFL season, instead of information about the teams as a whole.
+
+We also introduced a new variable, representing the era in which the teams played. This "era" variable is based directly off of the season in which the teams played, and it is a categorical variable taking on one of four values, representing the four eras of NFL play discussed in **Introduction**.
+
+However, this smaller table of values was not ideal for comparing teams across eras, as NFL teams have not always played the same number of games throughout history. Prior to the start of the 1978 NFL season, the league chose to increase the length of the regular season from 14 games to 16 games (Pro Football Talk, 2014), and the regular season was expanded to 17 games starting with the 2021 NFL season, which we have chosen not to include in our data. Additionally, as a result of the NFL Players' Association (NFLPA) strike in 1982, the 1982 regular season was shortened to only 9 games instead of a usual 16-game schedule (Boyle, 1982; Pro Football Reference, 2021).
+
+To more effectively compare teams who played 14 games to teams who played 16 games, we modified the teams' cumulative season totals to get the per-game statistics for each of the teams in the league. To do this, we used the `tidyverse` package in R (Wickham et al., 2019) to modify the data which we had collected, by dividing our cumulative totals by the number of games which the team played during that season. This adjustment to our data allows us to compare teams from different years and eras, as this modification helps to dampen the natural increase in cumulative seasonal totals that we would expect when teams play more games per season.
+
+Additionally, we introduced some new variables which were not present in the originally collected data, but were derived from the information which we collected. These new variables are the percentage of offensive plays where the team chose to run or pass, the percentage of the team's total yardage which came from running and passing plays, and the team's touchdown percentage, interception percentage, and completion percentage on passing plays.
+
+With the exception of the teams' names and the eras which the teams played in, the remainder of the variables in our data are numerical, which allows for us to easily clean the data and compare the numerical values in the dataset to one another.
+
+The data which is available on Pro Football Reference is incredibly thorough and well-managed, which was beneficial, as there were no missing values or anomalous results in the data which collected from their website using the `sportsipy` API. 
+
+```{r, echo = FALSE, warning = FALSE}
+# Clear any outputs and data which exist already in the global environment
+rm(list = ls())
+
+# Load data
+nfl_full <- read_csv("NFL_Data.csv")
+
+# Selecting the variables for the offense-based metrics we care about
+team_offense <- nfl_full %>% 
+  select(name, season, games_played, plays, points_for, yards, yards_per_play,
+         pass_completions, pass_attempts, pass_yards, 
+         pass_net_yards_per_attempt, pass_touchdowns, interceptions,
+         rush_attempts, rush_yards, rush_yards_per_attempt) %>%
+  mutate(era = case_when(season <= 1977 ~ 'Pre-1978',
+                         1978 <= season & season <= 1993 ~ '1978-1993',
+                         1994 <= season & season <= 2008 ~ '1994-2008',
+                         2008 < season ~ 'Post-2008'))
+
+# Ensures that the 5 different eras are listed in the proper chronological order instead of alphabetically
+team_offense$era <- factor(team_offense$era, 
+                           levels = c('Pre-1978', '1978-1993', '1994-2008', 'Post-2008'))
+
+# Selecting and mutating to get per-game and per-play variables
+team_pergame <- team_offense %>% 
+  mutate(plays_per_game = plays/games_played,
+         points_per_game = points_for/games_played,
+         yards_per_game = yards/games_played, 
+         pass_completions_per_game = pass_completions/games_played, 
+         pass_attempts_per_game = pass_attempts/games_played, 
+         pass_yards_per_game = pass_yards/games_played, 
+         pass_touchdowns_per_game = pass_touchdowns/games_played,
+         interceptions_per_game = interceptions/games_played,
+         rush_attempts_per_game = rush_attempts/games_played,
+         rush_yards_per_game = rush_yards/games_played,
+         pass_yards_per_attempt = pass_yards/pass_attempts,
+         rush_yards_per_attempt = rush_yards/rush_attempts,
+         pass_completion_pct = pass_completions/pass_attempts * 100,
+         pass_touchdown_pct = pass_touchdowns/pass_attempts * 100,
+         interception_pct = interceptions/pass_attempts * 100,
+         pass_play_pct = pass_attempts/plays * 100,
+         rush_play_pct = rush_attempts/plays * 100,
+         pass_yard_pct = pass_yards/yards * 100,
+         rush_yard_pct = rush_yards/yards * 100) %>%
+  select(name, season, era, points_per_game, yards_per_game, pass_yards_per_game,
+         pass_yard_pct, rush_yards_per_game, rush_yard_pct, pass_attempts_per_game,
+         pass_completions_per_game, pass_completion_pct, pass_yards_per_attempt,
+         pass_touchdowns_per_game, pass_touchdown_pct, interceptions_per_game,
+         interception_pct, pass_play_pct, rush_attempts_per_game, 
+         rush_yards_per_attempt, rush_play_pct)
+```
+
+## Variables of Interest
+
+Overall, we have 18 different numerical metrics which we have used to measure the offensive production of NFL teams in our dataset. Brief descriptions of each of these 18 metrics are given below:
+
+* **Points per Game**: The mean number of points scored per game.
+* **Total Yards per Game**: The mean number of total yards gained on offense per game.
+* **Pass Yards per Game**: The mean number of yards gained through passing plays per game.
+* **Passing Yardage Percentage**: The ratio of yards gained through passing to total yards gained on offense, expressed as a percentage.
+* **Rush Yards per Game**: The mean number of yards gained through rushing plays per game.
+* **Rushing Yardage Percentage**: The ratio of yards gained through rushing to total yards gained on offense, expressed as a percentage.
+* **Pass Attempts per Game**: The mean number of passing plays attempted per game.
+* **Pass Completions per Game**: The mean number of completed passes per game.
+* **Pass Completion Percentage**: The ratio of completed passes to attempted passes, expressed as a percentage.
+* **Pass Touchdowns per Game**: The mean number of passing touchdowns thrown per game.
+* **Passing Touchdown Percentage**: The ratio of passing touchdowns to attempted passes, expressed as a percentage.
+* **Interceptions per Game**: The mean number of interceptions thrown per game.
+* **Interception Percentage**: The ratio of interceptions thrown to attempted passes, expressed as a percentage.
+* **Yards per Pass Attempt**: The ratio of yards gained through all passing plays to the number of attempted passing plays.
+* **Passing Play Percentage**: The ratio of passing plays to total plays on offense, expressed as a percentage.
+* **Rush Attempts per Game**: The mean number of rushing plays attempted per game.
+* **Yards per Rush Attempt**: The ratio of yards gained through all rushing plays to the number of attempted rushing plays.
+* **Rushing Play Percentage**: The ratio of rushing plays to total plays on offense, expressed as a percentage.
+
+In addition to these 18 metrics, there are three other variables which we will use in our analyses. These variables are the **Season** in which a team played, the **Name** of the team, and the **Era** in which a team played; representing which of the major rule changes discussed in the **Introduction** section had already been implemented by the NFL during that season.
+
+Although we have a total of 18 metrics which we can use to examine NFL offenses from 1970 onward, we will not use all of these metrics in our analyses of how the NFL has changed throughout these four eras. Some of the metrics listed above serve as contextual information, but they do not provide as much information about patterns of play within the NFL as a whole.
+
+## Data Summaries
+
+We will now take a closer look at the distribution of the offensive production metrics described above. First, we will examine  the mean values of each of these metrics in each of our four distinct eras of play, to get a sense for how these metrics have changed with respect to the NFL's rules.
+
+```{r, echo = FALSE}
+# Grouping by era to get league-wide averages for each of the four eras
+offense_avgs_by_era <- team_offense %>% 
+  select(-name, -season) %>% 
+  group_by(era) %>%
+  summarise_at(vars(games_played:rush_yards_per_attempt), sum) %>%
+  select(-era) %>%
+  mutate(plays_per_game = plays/games_played,
+         points_per_game = points_for/games_played,
+         yards_per_game = yards/games_played, 
+         pass_completions_per_game = pass_completions/games_played, 
+         pass_attempts_per_game = pass_attempts/games_played, 
+         pass_yards_per_game = pass_yards/games_played, 
+         pass_touchdowns_per_game = pass_touchdowns/games_played,
+         interceptions_per_game = interceptions/games_played,
+         rush_attempts_per_game = rush_attempts/games_played,
+         rush_yards_per_game = rush_yards/games_played,
+         pass_yards_per_attempt = pass_yards/pass_attempts,
+         rush_yards_per_attempt = rush_yards/rush_attempts,
+         pass_completion_pct = pass_completions/pass_attempts * 100,
+         pass_touchdown_pct = pass_touchdowns/pass_attempts * 100,
+         interception_pct = interceptions/pass_attempts * 100,
+         pass_play_pct = pass_attempts/plays * 100,
+         rush_play_pct = rush_attempts/plays * 100,
+         pass_yard_pct = pass_yards/yards * 100,
+         rush_yard_pct = rush_yards/yards * 100) %>%
+  select(points_per_game, yards_per_game, pass_yards_per_game,
+         pass_yard_pct, rush_yards_per_game, rush_yard_pct, pass_attempts_per_game,
+         pass_completions_per_game, pass_completion_pct, pass_yards_per_attempt,
+         pass_touchdowns_per_game, pass_touchdown_pct, interceptions_per_game,
+         interception_pct, pass_play_pct, rush_attempts_per_game, 
+         rush_yards_per_attempt, rush_play_pct) %>%
+  as.data.frame() %>% 
+  t()
+
+colnames(offense_avgs_by_era) <- c('Pre-1978', '1978-1993', '1994-2008', 'Post-2008')
+rownames(offense_avgs_by_era) <- c("Points per Game", "Total Yards per Game", "Pass Yards per Game", 
+                                   "Passing Yardage Percentage", "Rush Yards per Game", "Rushing Yardage Percentage", 
+                                   "Pass Attempts per Game",  "Pass Completions per Game", 
+                                   "Pass Completion Percentage", "Yards per Pass Attempt", "Passing Touchdowns per Game",
+                                   "Passing Touchdown Percentage", "Interceptions per Game", "Interception Percentage", 
+                                   "Passing Play Percentage", "Rush Attempts per Game", 
+                                   "Yards per Rush Attempt", "Rushing Play Percentage")
+
+# Making a table of the per-era averages computed above
+kable(offense_avgs_by_era, caption = "Average Offensive Production by NFL Teams per era", 
+      digits = 3, booktabs = T, linesep = "") %>%
+  kable_styling(latex_options = "striped")
+```
+Table 1 gives a numerical summary of the average offensive production by all NFL teams in a given era for each of our four chosen eras of NFL football. The data in Table 1 represents the teams' averages in these offensive production metrics from 51 NFL seasons' worth of data, with a total of 1509 teams' individual seasons being reflected in the summary above. 
+
+The information in Table 1 displays clear patterns in many of our chosen offensive metrics over time. Of the 18 offensive production metrics which we have measured for each NFL team, 10 of these metrics have consistently increased from one era to the next as the NFL changed its rules, and another 5 metrics have consistently decreased from each era to the next. Only three metrics (Rush Yards per Game, Yards per Pass Attempt, and Pass Touchdown Percentage) which are shown in Table 1 do not exhibit a steady pattern of increase or decrease over time across all four eras of the NFL as new rules have been implemented in the league.
+
+Based on the averages per era shown in Table 1, it would appear that scoring has increased league-wide, as well as total yardage per game. In addition to these 'general' metrics increasing, nearly all of the passing-based metrics, such as pass attempts, pass completions, and completion percentage have had considerably increases across these eras, indicating that NFL passing has been a large beneficiary of the rule changes which occurred in 1978, 1994, and 2009.
+
+Next, we will examine trends among NFL teams' choices with regard to whether to opt for passing or rushing the ball while on offense.
+
+```{r, echo = FALSE}
+play_percentages <- team_offense %>%
+  select(season, plays, pass_attempts, rush_attempts) %>%
+  group_by(as.factor(season)) %>%
+  summarise_at(c(2:4), sum) %>%
+  mutate(season = 1969 + as.numeric(`as.factor(season)`)) %>%
+  mutate(pass_play_pct = pass_attempts/plays * 100,
+         rush_play_pct = rush_attempts/plays * 100) %>%
+  select(c(5:7))
+
+play_percentages_melted <- melt(as.data.frame(play_percentages), id.vars = c("season"))
+
+play_percentages_melted %>%
+  ggplot(aes(x = season, y = value/100, color = variable)) + geom_line() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Season", y = "Percentage of all Offensive Plays",
+       title = "Average Percentage of Passing and Rushing Plays \namong NFL Offenses from 1970 to 2020",
+       subtitle = "Data from pro-football-reference.com",
+       caption = "Figure 1: A line graph depicting the percentage of offensive plays in the NFL where the team chose
+       to pass the ball (blue) or run with the ball (red) in each season from 1970 to 2020.", color = "") +
+  theme_minimal() +
+  scale_color_manual(labels = c("Passing Plays", "Rushing Plays"), values = c("blue", "red")) + 
+  theme(plot.caption = element_text(hjust = 0.5), plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = 1977.5, linetype = "dashed") +
+  geom_vline(xintercept = 1993.5, linetype = "dashed") +
+  geom_vline(xintercept = 2008.5, linetype = "dashed")
+```
+The line graph shown in Figure 1 represents the percentages of all NFL offensive plays which were passing and rushing plays for each NFL season from 1970 to 2020. The three vertical dotted lines represent the 'cutoffs' between each of the eras; segmenting the seasons in the graph into the four time intervals from 1970-1977, 1978-1993, 1994-2008, and 2009-2020.
+
+As teams have to choose whether to opt for a passing play or a rushing play on a given down, it is expected that as the frequency of passing plays increases, the frequency of rushing plays must decrease, and vice-versa. However, the frequencies of passing and rushing plays will not add up to 100% in any given year, as there are other offensive plays which are neither passing plays nor rushing plays, such as field goal attempts and punts.
+
+Figure 1 clearly depicts a trend among NFL teams which began in the early 1980's and has continued to this day. As time goes on, NFL teams are more willing to forgo rushing plays in favour of passing plays. This trend of increasing the percentage of passing plays began around the 1982 NFL season, and while the percentage of passing plays has not always increased year-over-year, Figure 1 depicts a general trend which has existed in the NFL for a long time.
+
+Looking back to before the beginning of this trend, we can see that passing plays were actually decreasing in popularity from 1970 to 1977. In fact, the 1977 NFL season had the lowest average percentage of passing plays among all 51 post-merger seasons, with only `r round((play_percentages %>% arrange(pass_play_pct))[1, 2])`% of offensive plays that season being passing plays.
+
+After 'bottoming out' in the 1977 season, passing plays became more frequent among NFL teams, with massive increases in the frequency of passing plays in the league over the next few years. By the 1980 season, `r round(play_percentages %>% filter(season == 1980) %>% select(pass_play_pct), 3)`% of offensive plays were passing plays. The 1982 strike-shortened season (Pro Football Reference, 2021) was the first season where passing plays were more common than rushing plays. 
+
+Although the increased frequency of passing plays was unheard of in the league prior to the 1982 season, this pattern has since become the norm in the NFL. The 1983 NFL season was the last season in which rushing plays were more frequent than passing plays, as passing plays have been more common in each of the 37 NFL seasons since 1983.
+
+```{r, echo = FALSE}
+yardage_percentages <- team_offense %>%
+  select(season, yards, pass_yards, rush_yards) %>%
+  group_by(as.factor(season)) %>%
+  summarise_at(c(2:4), sum) %>%
+  mutate(season = 1969 + as.numeric(`as.factor(season)`)) %>%
+  mutate(pass_yard_pct = pass_yards/yards * 100,
+         rush_yard_pct = rush_yards/yards * 100) %>%
+  select(c(5:7))
+
+yardage_percentages_melted <- melt(as.data.frame(yardage_percentages), id.vars = c("season"))
+
+yardage_percentages_melted %>%
+  ggplot(aes(x = season, y = value/100, color = variable)) + geom_line() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Season", y = "Percentage of Total Yardage",
+       title = "Percentage of Yardage from Passing and Rushing Plays \namong NFL Offenses from 1970 to 2020",
+       subtitle = "Data from pro-football-reference.com",
+       caption = "Figure 2: A line graph depicting the percentage of NFL teams' total yardage in a season which
+       was earned on passing plays (blue) and rushing plays (red) in each season from 1970 to 2020.", color = "") +
+  theme_minimal() +
+  scale_color_manual(labels = c("Passing Plays", "Rushing Plays"), values = c("blue", "red")) + 
+  theme(plot.caption = element_text(hjust = 0.5), plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = 1977.5, linetype = "dashed") +
+  geom_vline(xintercept = 1993.5, linetype = "dashed") +
+  geom_vline(xintercept = 2008.5, linetype = "dashed")
+```
+
+The line graph in Figure 2 represents the percentages of yardage which NFL teams earned via passing plays and running plays during each NFL season from 1970 to 2020. Similarly to Figure 1, the three vertical dotted lines represent the 'cutoffs' between each of the eras; segmenting the 51 NFL seasons into intervals from 1970-1977, 1978-1993, 1994-2008, and 2009-2020.
+
+Unlike the proportions of offensive plays which were passing plays or rushing plays, passing plays and rushing plays are the only ways in which an NFL team can gain yards while on offense. As such, we know that the two proportions graphed in Figure 2 must always add up to 100%, so increases in the percentage of yardage gained through passing yards must come with a corresponding decrease in the percentage of yardage gained through rushing, and vice-versa.
+
+As we saw with the data displayed in Figure 1, there is a clear trend among NFL teams in which the proportion of total yardage gained by teams from passing plays has continued to increase each season, while the proportion of NFL teams' yardage gained via rushing has decreased. Additionally, we can see that similarly to the data shown in Figure 1, there was a large increase in passing performance between 1977 and 1980, with smaller, but noticeable improvements in the seasons since the early 1980's.
+
+Unlike the data in Figure 1, the percentage of yardage gained by passing plays was never considerably smaller than the proportion gained via rushing plays. Although the gap has been steadily widening since the 1980 NFL season, this relationship has never 'flipped' with respect to the proportions of yardage gained through passing and rushing.
+
+Additionally, we know from Table 1 that there has been a steady positive trends in NFL teams' total yards per game throughout the four eras which we are examining. In Figure 2, we see that the proportion of yardage gained through rushing has decreased, while the proportion gained via passing has increased in its stead. 
+
+However, this does not mean that NFL teams' total rushing yards have decreased throughout time. From 1994 to 2008, NFL teams averaged `r round(offense_avgs_by_era[5,3], 3)` rushing yards per game, whereas teams averaged `r round(offense_avgs_by_era[5,4], 3)` rushing yards per game from 2009 to 2020. Although teams' average rushing yards per game slightly increased from the 1994-2008 era to the 2009-2020 era, the overall rushing yardage percentage fell from `r round(offense_avgs_by_era[6,3], 3)`% to `r round(offense_avgs_by_era[6,4], 3)`%, as this slight increase in rushing yardage was not proportional to the corresponding increase in overall yardage between these two eras.
+
+We will now turn our attention towards examining the eras which gave rise to the highest-performing teams with regard to certain offensive production metrics. In particular, we will examine the top 15 NFL teams from 1970 to 2020 in the following three metrics; Points per Game, Pass Yards per Game, and Rush Yards per Game.
+
+```{r, echo = FALSE}
+top_15_points <- team_pergame %>% 
+  slice_max(points_per_game, n = 15) %>%
+  mutate(team = paste(season, name)) %>%
+  select(team, era, points_per_game, yards_per_game, pass_yards_per_game, pass_attempts_per_game,
+         pass_completions_per_game, pass_completion_pct, pass_yards_per_attempt, rush_yards_per_game,
+         rush_attempts_per_game, rush_yards_per_attempt)
+
+kable(top_15_points, digits = 3, booktabs = T, escape = F, linesep = "",
+      caption = "Offensive Production for the Top 15 NFL teams in Points per Game from 1970-2020",
+      col.names = linebreak(c("Team", "Era", "Points\nper Game", "Total Yards\nper Game", "Pass Yards\nper Game", 
+                              "Pass Attempts\nper Game", "Pass Completions\nper Game", "Pass Completion\nPercentage", "Yards per\nPass Attempt", "Rush Yards\nper Game", "Rush Attempts\nper Game", "Rush Yards\nper Attempt"))) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+
+Of the 15 teams with the highest number of points per game from 1970 to 2020, we see that 9 of the top 15 teams, including 4 of the top 5 overall, played in the era from 2009 to 2020, whereas another 5 of the remaining 6 teams played in the 1994-2008 era of the NFL. Based on the per-era averages shown in Table 1, this result is not incredibly surprising, as the average number of points scored per game has increased steadily since the 1970 season.
+
+We see that none of the 15 teams who are displayed in Table 2 played during the era from 1970 to 1977. In fact, the highest-scoring team from the 1970-1977 era of the NFL was the `r team_pergame %>% filter(era == 'Pre-1978') %>% slice_max(points_per_game, n = 1) %>% mutate(team = paste(season, name)) %>% select(team)`, who averaged a total of `r round(team_pergame %>% filter(era == 'Pre-1978') %>% slice_max(points_per_game, n = 1) %>% select(points_per_game), 3)` points per game. 
+
+Although scoring `r round(team_pergame %>% filter(era == 'Pre-1978') %>% slice_max(points_per_game, n = 1) %>% select(points_per_game), 3)` points per game is an impressive feat for an NFL team to accomplish during any era, this only puts the team at `r team_pergame %>% mutate(rank = min_rank(desc(points_per_game))) %>% filter(era == 'Pre-1978') %>% slice_max(points_per_game, n = 1) %>% select(rank)`th overall among all 1509 NFL teams from 1970 to 2020.
+
+```{r, echo = FALSE}
+top_15_passing <- team_pergame %>% 
+  slice_max(pass_yards_per_game, n = 15) %>%
+  mutate(team = paste(season, name)) %>%
+  select(team, era, pass_yards_per_game, pass_attempts_per_game, pass_completions_per_game, pass_completion_pct,
+         pass_yards_per_attempt, pass_yard_pct, pass_play_pct)
+
+kable(top_15_passing, digits = 3, booktabs = T, escape = F, linesep = "",
+      caption = "Passing Statistics for the Top 15 NFL teams in Pass Yards per Game from 1970-2020",
+      col.names = linebreak(c("Team", "Era", "Pass Yards\nper Game", "Pass Attempts\nper Game", "Pass Completions\nper Game",
+                    "Pass Completion\nPercentage", "Yards per\nPass Attempt", "Passing Yardage\nPercentage", 
+                    "Passing Play\nPercentage"))) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+
+Table 3 contains information about the 15 teams who had the greatest number of passing yards per game among all NFL teams from 1970 to 2020. The top three teams in this table were all present in Table 2, and in total, 5 of the 15 teams in Table 3 were also listed in Table 2. Surprisingly, the `r team_pergame %>% slice_max(yards_per_game, n = 1) %>% mutate(team = paste(season, name)) %>% select(team)` were the number one overall team from 1970 to 2020 with regard to both points per game as well as their total passing yards per game.
+
+Similarly to Table 2, 11 of the top 15 teams who recorded the highest number of pass yards per game were teams from the 'Post-2008' era of the NFL, whereas the eras from 1978-1993 and 1994-2008 each had two representatives among the top 15 teams with regard to this metric. 
+
+Again, none of the 15 teams listed in Table 3 played during the era from 1970 to 1977. The team with the highest passing yards per game from the 1970-1977 era of the NFL was the `r team_pergame %>% filter(era == 'Pre-1978') %>% slice_max(pass_yards_per_game, n = 1) %>% mutate(team = paste(season, name)) %>% select(team)`, who averaged a total of `r round(team_pergame %>% filter(era == 'Pre-1978') %>% slice_max(pass_yards_per_game, n = 1) %>% select(pass_yards_per_game), 3)` passing yards per game. 
+
+In the Post-2008 era, NFL teams have averaged a total of `r round(offense_avgs_by_era[3,4], 3)` yards per game, which is slightly higher than the best team from the 1970-1977 era with respect to this metric. By the standards of the current era of the NFL, the `r team_pergame %>% filter(era == 'Pre-1978') %>% slice_max(pass_yards_per_game, n = 1) %>% mutate(team = paste(season, name)) %>% select(team)` are average in terms of their passing yardage per game, despite these being elite numbers when the team was playing. 
+
+```{r, echo = FALSE}
+top_15_rushing <- team_pergame %>% 
+  slice_max(rush_yards_per_game, n = 15) %>%
+  mutate(team = paste(season, name)) %>%
+  select(team, era, rush_yards_per_game, rush_attempts_per_game, rush_yards_per_attempt, rush_yard_pct, rush_play_pct)
+
+kable(top_15_rushing, digits = 3, booktabs = T, escape = F, linesep = "",
+      caption = "Rushing Statistics for the Top 15 NFL teams in Rush Yards per Game from 1970-2020",
+      col.names = linebreak(c("Team", "Era", "Rush Yards\nper Game", "Rush Attempts\nper Game", 
+                    "Rush Yards\nper Attempt", "Rushing Yardage\nPercentage", "Rushing Play\nPercentage"))) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+
+Table 4 contains information about the 15 teams who had the greatest number of rushing yards per game among all NFL teams from 1970 to 2020. Unlike Tables 2 and 3, a majority of these teams played during the era from 1970 to 1977, with 10 of the top 15 teams having played during this era, including all of the top 5 overall teams. 
+
+Interestingly, while there are no teams from 1994 to 2008 who are listed in Table 4, there are 3 teams from the preceding era present in this table, and another 2 teams from the subsequent era. However, this does line up with the averages depicted in Table 1, as the 1994-2008 era was the era which had the lowest average rushing yards per game among the four eras from 1970 to 2020.
+
+All statistical analyses for this report were programmed using `R version 4.1.2`. 
+
+The data used in this report was collected using `Python version 3.9`, alongside the `sportsipy` Python API (Clark, 2018), and the `pandas` software library (pandas, 2021; NumFOCUS, 2021).
+
+Other R packages used in the preparation of this report include `rdrobust version 1.0.8` (Calonico et al., 2021), `nflfastR version 4.3.0` (Baldwin & Carl, 2021), `tidyverse version 1.3.1` (Wickham et al., 2019), `knitr version 1.37` (Xie, 2021), `kableExtra version 1.3.4` (Zhu, 2021), `reshape version 0.8.8` (Wickham et al., 2018) and `broom version 0.7.10` (Couch et al., 2021). 
+
+The report was compiled using `MiKTeX version 21.6`. (Schenk, 2021)
+
+# Methods
+
+To determine the effect of the NFL rule changes on total offensive production in the NFL, we will use regression discontinuity design models to determine the effects of the NFL rule changes in 1978, 1994, and 2009 on NFL teams.
+
+The particular outcomes which we will examine the effects of these rule changes upon are NFL teams' points per game, total yards per game, passing yards per game, passing yards per attempt, rushing yards per game, and rushing yards per attempt.
+
+Each of these six variables will have its own corresponding regression discontinuity design model, and we will separately determine the effects of these rule changes on each of these six offensive production metrics.
+
+As a majority of the offensive production metrics which we have examined (see Table 1 for details) can be expected to be correlated with one another, we will not use any of these other metrics as predictors in the regression discontinuty design models, as this would likely cause issues with multicollinearity.
+
+## Regression Discontinuity Designs
+
+A regression discontinuity design is a statistical evaluation technique which can be applied to determine the effects which a cutoff that exists for one variable may have on the value of another variable (Alexander, 2021).
+
+Regression discontinuity designs differ from regression models, because a 'standard' regression model simply examines the probability of some underlying mathematical relationship existing between two numerical variables.
+
+On the other hand, a regression discontinuity design can be utilized when we aim to measure the relationship between some outcome variable and some other continuous variable, where there is a 'forcing function' with regard to some threshold which exists for this variable, which might affect the values of the outcome (Alexander, 2021). Unlike standard regression models, a regression discontinuity design can be used to examine the possibility of a causal relationship between two possibly-related variables, in which one of the variables has some threshold which could potentially affect the value of the other variate, depending upon which side of the threshold the value falls under (Alexander, 2021).  
+
+There are two main types of regression discontinuity design; sharp regression discontinuity designs, and fuzzy regression discontinuity designs. A sharp regression discontinuity design is used when the threshold has a known, fixed value, and all values on one side of the threshold fall are given a certain treatment, while values on the other side of this threshold are not given this same treatment (Qasim & Stevens, 2020). On the other hand, a fuzzy regression discontinuity occurs when the threshold is not a 'black-and-white' barrier, and it is possible for some values which fall on a specific side of the threshold to instead be treated as if they were on the other side of the cut-off point (Qasim & Stevens, 2020).
+
+In order to effectively apply a regression discontinuity design, there are two main assumptions which the data should satisfy:
+
+1. The cut-off is 'known, precise and free of manipulation' (Cunningham, 2020; Alexander, 2021)
+2. The 'forcing function' is a continuous function.
+
+A linear regression model with a single predictor is a model of the form $Y = \beta_0 + \beta_{1}X + \epsilon$. In this model, $Y$ represents the value of the outcome variable, $X$ represents the value of the input variable, $\beta_0$ is a constant representing the intercept (value of $Y$ when $X = 0$), $\beta_1$ is a constant representing the expected change in $Y$ per unit change in $X$, and $\epsilon$ represents a 'random error term' which is the cause of the fluctuation in the outcome values with respect to the input value.
+
+A linear regression discontinuity design model is similar to the linear regression model described above. However, a linear regression discontinuity design model has a function of the form $Y = \beta_0 + \beta_{1}X + \beta_{2}\mathbb{I}_{X > T} + \epsilon$. In this model, the roles of the variables $X, Y, \beta_0, \beta_1$, and $\epsilon$ remain the same as in the standard linear regression model. The value of $\beta_2$ represents the expected change in the value of $Y$ as we move from one side of the threshold to the other. The function $\mathbf{I}_{X > T}$ is an indicator function, representing the function $f(X) = \begin{cases}0, & X \le T\\ 1, & X > T\end{cases}$, where $T$ represents the value of the threshold for the forcing variable.
+
+In the data which we have collected about NFL teams from 1970 to 2020, we can treat the presence or lack thereof or certain rules in the NFL's rulebook as a 'forcing function' with regard to the season in which the NFL teams played.
+
+Since the NFL implements all rule changes during the offseason (NFL Football Operations, 2021), we know that all three of the major rule changes described in **Introduction** were not implemented during the NFL season, so we can consider these values to be thresholds for our NFL seasons, which are known, precise, and free of manipulation.
+
+Furthermore, time is a continuous variable, and the forcing functions which we could create with respect to whether an NFL team played before or after the implementation of a certain rule would be a continuous function, as these forcing functions simply map seasons to their respective eras, as we had already done at the beginning of the **Data Cleaning** section.
+
+For the data which we have collected, we have a total of three cutoffs for our continuous forcing variable, which is the season in which the NFL team played. The three cutoffs for the season variable correspond to the introduction of the "Mel Blount Rule" between the 1977 and 1978 NFL seasons, the slew of changes to the NFL's rulebook between the 1993 and 1994 seasons, and the introduction of the "Tom Brady Rule" between the 2008 and 2009 NFL seasons.
+
+We know that the "Mel Blount Rule" was not a rule which was 'on the books' for any of the games in the 1977 season, and it was a rule during every game in the 1978 season, and beyond. The same reasoning applies to the other two major rule changes discussed in this report, as the NFL only changes the league's rules during the offseason (NFL Football Operations, 2021). As such, we konw that all three of the thresholds for our forcing variable lead to sharp regression discontinuities, as every game prior to these rules being implemented was unaffected by the rules, whereas every game after the rules' implementation would have been affected by their existence.
+
+Thus, our regression discontinuity models will be of the form $Y = \beta_0 + \beta_{1}(\text{season}) + \beta_{2}\mathbb{I}_{1978 \le \text{season}} + \beta_{3}\mathbb{I}_{1994 \le \text{season}} + \beta_{4}\mathbb{I}_{2009 \le \text{season}} + \epsilon$. 
+
+In the model equation above, $Y$ represents the value of our outcome variable, $\beta_0$ represents the intercept of our linear model, $\beta_1$ represents the expected change in our outcome variable per year, and $\epsilon$ is the 'random error term' which accounts for variance in the outcomes. The value of $\beta_2$ represents the expected difference in the outcome between the 1970-1977 NFL era and the 1978-1993 NFL era. Similarly, $\beta_3$ represents the expected difference in the outcome between the 1978-1993 NFL era and the 1994-2008 NFL era, and $\beta_4$ represents the expected difference in the outcome between the 1994-2008 NFL era and the 2009-2020 era. 
+
+Thus, $\beta_2$ will represent the effect of the NFL rule changes prior to the 1978 NFL season, $\beta_3$ represents the effect of the NFL rule changes which happened prior to the 1994 NFL season, and $\beta_4$ represents the effect of the NFL rule changes prior to the 2009 NFL season.
+
+\newpage
+
+# Results
+```{r, echo = FALSE}
+team_pergame <- team_pergame %>%
+  mutate(after_1978 = if_else(season < 1978, 0, 1),
+         after_1994 = if_else(season < 1994, 0, 1),
+         after_2009 = if_else(season < 2009, 0, 1))
+```
+
+```{r, echo = FALSE}
+points_per_game_rdd <- lm(points_per_game ~ season + after_1978 + after_1994 + after_2009, data = team_pergame) %>%
+  tidy()
+
+points_per_game_rdd$term <- c("Intercept", "Season", "Season after 1978", "Season after 1994", "Season after 2009")
+
+kable(points_per_game_rdd, digits = 5, booktabs = T, escape = F, linesep = "",
+      caption = "Regression discontinuity model for the number of points scored per game among NFL teams from 1970-2020.",
+      col.names = c("Term", "Estimate", "Standard Error", "Test Statistic", "p-value")) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+```{r, echo = FALSE, warning = FALSE}
+team_pergame %>% 
+  ggplot(aes(x = season, y = points_per_game, color = era)) + geom_point() +
+  geom_smooth(data = team_pergame %>% filter(season < 1978), 
+              method = 'lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1978 <= season & season < 1994), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1994 <= season & season < 2009), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(2009 <= season & season < 2020), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  theme_minimal() +
+  labs(x = "Season", y = "Points per Game", title = "Points per Game among NFL Offenses from 1970 to 2020",
+       subtitle = "Data from pro-football-reference.com", color = "Era",
+       caption = "Figure 3: Points per game for NFL teams from\n1970 to 2020 by season and era, with trendlines for each era.") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        plot.caption = element_text(hjust = 0.5))
+```
+
+```{r, echo = FALSE}
+yards_per_game_rdd <- lm(yards_per_game ~ season + after_1978 + after_1994 + after_2009, data = team_pergame) %>% 
+  tidy()
+
+yards_per_game_rdd$term <- c("Intercept", "Season", "Season after 1978", "Season after 1994", "Season after 2009")
+
+kable(yards_per_game_rdd, digits = 5, booktabs = T, escape = F, linesep = "",
+      caption = "Regression discontinuity model for the total yardage per game among NFL teams from 1970-2020.",
+      col.names = c("Term", "Estimate", "Standard Error", "Test Statistic", "p-value")) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+```{r, echo = FALSE, warning = FALSE}
+team_pergame %>% 
+  ggplot(aes(x = season, y = yards_per_game, color = era)) + geom_point() +
+  geom_smooth(data = team_pergame %>% filter(season < 1978), 
+              method = 'lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1978 <= season & season < 1994), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1994 <= season & season < 2009), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(2009 <= season & season < 2020), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  theme_minimal() +
+  labs(x = "Season", y = "Total Yards per Game", title = "Total Yards per Game among NFL Offenses from 1970 to 2020",
+       subtitle = "Data from pro-football-reference.com", color = "Era",
+       caption = "Figure 4: Total yards per game for NFL teams from\n1970 to 2020 by season and era, with trendlines for each era.") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        plot.caption = element_text(hjust = 0.5))
+```
+
+```{r, echo = FALSE}
+pass_yards_per_game_rdd <- lm(pass_yards_per_game ~ season + after_1978 + after_1994 + after_2009, data = team_pergame) %>%
+  tidy()
+
+pass_yards_per_game_rdd$term <- c("Intercept", "Season", "Season after 1978", "Season after 1994", "Season after 2009")
+
+kable(pass_yards_per_game_rdd, digits = 5, booktabs = T, escape = F, linesep = "",
+      caption = "Regression discontinuity model for the total passing yardage per game among NFL teams from 1970-2020.",
+      col.names = c("Term", "Estimate", "Standard Error", "Test Statistic", "p-value")) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+```{r, echo = FALSE, warning = FALSE}
+team_pergame %>% 
+  ggplot(aes(x = season, y = pass_yards_per_game, color = era)) + geom_point() +
+  geom_smooth(data = team_pergame %>% filter(season < 1978), 
+              method = 'lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1978 <= season & season < 1994), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1994 <= season & season < 2009), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(2009 <= season & season < 2020), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  theme_minimal() +
+  labs(x = "Season", y = "Passing Yards per Game", title = "Passing Yards per Game among NFL Offenses from 1970 to 2020",
+       subtitle = "Data from pro-football-reference.com", color = "Era",
+       caption = "Figure 5: Passing yards per game for NFL teams from\n1970 to 2020 by season and era, with trendlines for each era.") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        plot.caption = element_text(hjust = 0.5))
+```
+```{r, echo = FALSE}
+pass_yards_per_attempt_rdd <- lm(pass_yards_per_attempt ~ season + after_1978 + after_1994 + after_2009, data = team_pergame) %>%
+  tidy()
+
+pass_yards_per_attempt_rdd$term <- c("Intercept", "Season", "Season after 1978", "Season after 1994", "Season after 2009")
+
+kable(pass_yards_per_attempt_rdd, digits = 5, booktabs = T, escape = F, linesep = "",
+      caption = "Regression discontinuity model for teams' pass yards per attempt among NFL teams from 1970-2020.",
+      col.names = c("Term", "Estimate", "Standard Error", "Test Statistic", "p-value")) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+```{r, echo = FALSE, warning = FALSE}
+team_pergame %>% 
+  ggplot(aes(x = season, y = pass_yards_per_attempt, color = era)) + geom_point() +
+  geom_smooth(data = team_pergame %>% filter(season < 1978), 
+              method = 'lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1978 <= season & season < 1994), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1994 <= season & season < 2009), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(2009 <= season & season < 2020), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  theme_minimal() +
+  labs(x = "Season", y = "Passing Yards per Attempt", title = "Passing Yards per Attempt among NFL Offenses from 1970 to 2020",
+       subtitle = "Data from pro-football-reference.com", color = "Era",
+       caption = "Figure 6: Passing yards per attempt for NFL teams from\n1970 to 2020 by season and era, with trendlines for each era.") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        plot.caption = element_text(hjust = 0.5))
+```
+
+```{r, echo = FALSE}
+rush_yards_per_game_rdd <- lm(rush_yards_per_game ~ season + after_1978 + after_1994 + after_2009, data = team_pergame) %>%
+  tidy()
+
+rush_yards_per_game_rdd$term <- c("Intercept", "Season", "Season after 1978", "Season after 1994", "Season after 2009")
+
+kable(rush_yards_per_game_rdd, digits = 5, booktabs = T, escape = F, linesep = "",
+      caption = "Regression discontinuity model coefficients for the total rushing yards per game among NFL teams from 1970-2020.",
+      col.names = c("Term", "Estimate", "Standard Error", "Test Statistic", "p-value")) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+```{r, echo = FALSE, warning = FALSE}
+team_pergame %>% 
+  ggplot(aes(x = season, y = rush_yards_per_game, color = era)) + geom_point() +
+  geom_smooth(data = team_pergame %>% filter(season < 1978), 
+              method = 'lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1978 <= season & season < 1994), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1994 <= season & season < 2009), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(2009 <= season & season < 2020), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  theme_minimal() +
+  labs(x = "Season", y = "Rush Yards per Game", title = "Rush Yards per Game among NFL Offenses from 1970 to 2020",
+       subtitle = "Data from pro-football-reference.com", color = "Era",
+       caption = "Figure 7: Rushing yards per game for NFL teams from\n1970 to 2020 by season and era, with trendlines for each era.") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        plot.caption = element_text(hjust = 0.5))
+```
+
+```{r, echo = FALSE}
+rush_yards_per_attempt_rdd <- lm(rush_yards_per_attempt ~ season + after_1978 + after_1994 + after_2009, data = team_pergame) %>%
+  tidy()
+
+rush_yards_per_attempt_rdd$term <- c("Intercept", "Season", "Season after 1978", "Season after 1994", "Season after 2009")
+
+kable(rush_yards_per_attempt_rdd, digits = 5, booktabs = T, escape = F, linesep = "",
+      caption = "Model coefficients for the number of points scored per game among NFL teams from 1970-2020.",
+      col.names = c("Term", "Estimate", "Standard Error", "Test Statistic", "p-value")) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+```{r, echo = FALSE, warning = FALSE}
+team_pergame %>% 
+  ggplot(aes(x = season, y = rush_yards_per_attempt, color = era)) + geom_point() +
+  geom_smooth(data = team_pergame %>% filter(season < 1978), 
+              method = 'lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1978 <= season & season < 1994), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(1994 <= season & season < 2009), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  geom_smooth(data = team_pergame %>% filter(2009 <= season & season < 2020), 
+              method='lm',
+              se = FALSE,
+              color = "black") +
+  theme_minimal() +
+  labs(x = "Season", y = "Rush Yards per Attempt", title = "Rush Yards per Attempt among NFL Offenses from 1970 to 2020",
+       subtitle = "Data from pro-football-reference.com", color = "Era",
+       caption = "Figure 8: Rushing yards per attempt for NFL teams from\n1970 to 2020 by season and era, with trendlines for each era.") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), 
+        plot.caption = element_text(hjust = 0.5))
+```
+
+\newpage
+
+# Conclusions
+
+Throughout this report, we examined how three major sets of rule changes in the NFL affected the production of offenses in the NFL. These three rule changes were the introduction of the "Mel Blount Rule" in 1978, the changes proposed by the NFL Competition Committee in 1994, and the introduction of the "Brady Rule" in 2009. 
+
+Using sharp regression discontinuity design models with the implementations of each of these three rules as 'cutoffs' for their respective periods of time in the NFL (referred to as "eras"), we were able to determine if these rules created statistically significant changes in given offensive production metrics for an NFL team in a given season. 
+
+The six offensive production metrics which we examined using these sharp regression discontinuity design models were the number of points scored per game, the total yardage per game, passing yardage per game, passing yardage per attempt, rushing yardage per game, and rush yardage per attempt.
+
+At a 95% confidence level (equivalent to a 5% level of significance), we found that the introduction of the "Mel Blount Rule" in 1978 had a statistically significant effect on NFL teams' total yards per game, passing yards per game, pass yards per attempt, rushing yards per game, and rush yards per attempt. These significant relationships all make sense given the context of the rule. As we saw in Figure 1 and Figure 2, the introduction of this rule between the 1977 and 1978 NFL seasons cause a massive spike in the frequency of passing attempts among NFL teams, as well as an increasing trend in the percentage of yards by teams gained via passing yardage. The "Mel Blount Rule" explicitly forbids defensive players from physically blocking receivers who are more than 5 yards away from the line of scrimmage, which should directly improve the efficiency of receivers in the NFL, as there are fewer obstacles preventing them from catching a pass. Because of this, it makes sense that the introduction of the "Mel Blount Rule" could have such a direct impact on NFL offenses, as the rule was intended to "open up the passing game" (DeArdo, 2019), and the rule massively succeeded in that regard.
+
+At a 95% confidence level, we found that the changes to the NFL's rules which were introduced in 1994 had a statistically significant effect on NFL teams' rushing yards per attempt, but we do not have enough evidence to say that the 1994 rule changes had statistically significant effects on any of the other five offensive metrics, as the remaining five metrics' p-values corresponding to the rule changes implemented in 1994 are all well above our 5% threshold. Although the rules which were introduced by the NFL's Competition Committee in 1994 were explicitly introduced in order to make games more exciting for viewers and to compete with the popularity of the NBA (Craft, 2014), these rule changes did not seem to meet this target, as NFL offenses were not affected greatly by the introduction of these new rules.
+
+Lastly, at a 95% level of confidence, we found that the introduction of the "Brady Rule" in 2009 had a statistically significant effect on NFL teams' points scored per game, total yardage per game, passing yardage per game, passing yardage per attempt, and rushing yardage per game. Unlike the previous two major rule changes which were discussed, the "Brady Rule" was not initially devised by the NFL as a way to directly impact offenses in the NFL (Foster, 2009). The "Brady Rule" was created as a protection measure, as the NFL has a financial incentive to reduce the chance of their star players (such as Tom Brady, who was the reigning MVP at the time of his season-ending ACL/MCL injury) being injured and unable to play games in the league for a period of time. The "Brady Rule" was a major step forward for the league in terms of making the game safer for quarterbacks in the league. As a result of this rule, quarterbacks have a significantly smaller risk of injury on passing plays than they did prior to the rule's implementation in 2009 (Cunningham, 2017), which allows for offenses to be more reliant on passing plays than they had been in the past. The only offensive production metric which was not significantly impacted when this rule was introduced in 2009 was rushing yards per attempt, which should be expected, as the "Brady Rule" is only meant to protect quarterbacks who are behind the line of scrimmage. If a player on a team's offense is running with the football, the existence (or lack thereof) of this rule would not impact the play, as the rule only impacts quarterbacks on passing plays, and should not change the per-play efficiency of running plays in any meaningful way.
+
+We hypothesized that all three of the rule changes described above would have impacted the NFL's offenses in some way, and while each of the three did have a statistically significant effect on at least one of the six variables shown above, it is clear that the rule changes in 1978 and 2009 were significantly more impactful than the rule changes from 1994, in terms of how these rules each affected offensive production metrics across the NFL.
+
+## Limitations
+
+A limitation which was present in this analysis was that the NFL tends to make some minor changes to the rules for the league during every off-season (NFL Football Operations, 2021). Because the league's rules change somewhat on a year-to-year basis, it is difficult to say with certainty whether the three rule changes which we examined were the only major rule changes which may have significantly affected offenses in the NFL.
+
+The three rules which we examined throughout this report are the three most commonly-cited rules that people will mention when explaining how offenses have benefited more from the new NFL rules than defenses, but there could be other rule changes whose impacts on NFL offensive production has been overlooked.
+
+Another major limitation which we encountered within our research was that a majority of the offensive production metrics which we had selected were correlated with one another, so we were unable to use any predictors other than the season (and the thresholds) in our regression discontinuity design models for fear of correlation among our variables making the results uninterpretable.
+
+## Next Steps
+
+Ideally, a next step for this report would be to use the individual teams as factors in determining how NFL teams were affected by changes to the league's rules. For example, some teams may have coaches who prefer to have many pass attempts in a game, whereas others may prefer to play with a passing-oriented offense. These decisions are also impacted by the players on the team; most teams who have a bonafide star quarterback and receivers will not implement 'run-heavy' offenses, as this would be a waste of their quarterback's talent.
+
+A next step for this report which we would like to implement would be to examine how individual NFL teams were affected by these changes to the NFL's rules, as well as determining which coaches and players in the league benefited the most from these rule changes.
+
+\newpage
+# Bibliography 
+
+* *1982 NFL Standings & Team Stats*. (n.d.). Retrieved December 15, 2021, from [https://www.pro-football-reference.com/years/1982/](https://www.pro-football-reference.com/years/1982/).
+* Alder, J. (2019, November 04). The Basic Rules of Football. Retrieved December 19, 2021, from [https://www.liveabout.com/football-101-the-basics-of-football-1333784](https://www.liveabout.com/football-101-the-basics-of-football-1333784)
+* Alexander, R. (2021). *Telling Stories With Data*. Retrieved December 18, 2021, from [https://www.tellingstorieswithdata.com/](https://www.tellingstorieswithdata.com/)
+* Barnett, Z. (2021, January 22). Stop saying defense wins championships. Retrieved December 2, 2021, from [https://footballscoop.com/news/stop-saying-defense-wins-championships](https://footballscoop.com/news/stop-saying-defense-wins-championships)
+* Boyle, R. H. (1982, September 27). And Then The Clock Showed 00:00. *Sports Illustrated*. Retrieved December 16, 2021, from [https://vault.si.com/](https://vault.si.com/).
+* Brady, D. (1978, March 15). NFL Rules Changed to Aid Offense. *The Washington Post*. Retrieved December 15, 2021, from [https://www.washingtonpost.com/archive/sports/1978/03/15/nfl-rules-changed-to-aid-offense/dbeb4840-0f51-4c3e-9744-459305d8f925/](https://www.washingtonpost.com/archive/sports/1978/03/15/nfl-rules-changed-to-aid-offense/dbeb4840-0f51-4c3e-9744-459305d8f925/)
+* Carl, S., Baldwin, B., Sharpe, L., Horowitz, M., Yurko, R., Ventura, S., ... Edwards, J. (2021, October 06). nflfastR (version 4.3.0) [Computer software]. Retrieved December 14, 2021, from [https://www.nflfastr.com/](https://www.nflfastr.com/)
+* Clark, R. (2021, January 7). sportsipy (version 0.6.0) [Program documentation]. Retrieved December 11, 2021, from [https://sportsipy.readthedocs.io/en/stable/](https://sportsipy.readthedocs.io/en/stable/)
+* Craft, K. (2014, September 03). Hail Mary. Retrieved December 15, 2021, from [https://slate.com/culture/2014/09/1994-nfl-rules-how-a-series-of-pass-friendly-changes-saved-a-moribund-league-and-created-the-modern-nfl.html](https://slate.com/culture/2014/09/1994-nfl-rules-how-a-series-of-pass-friendly-changes-saved-a-moribund-league-and-created-the-modern-nfl.html)
+* Cunningham, S. (2021). *Causal Inference: The Mixtape*. Retrieved December 19, 2021, from [https://mixtape.scunning.com/](https://mixtape.scunning.com/)
+* Cunningham, S. (2017, November 30). How NFL Rules Changes Created a Golden Era of Quarterback Stats. Retrieved December 16, 2021, from [https://www.insidehook.com/article/sports/nfl-rule-changes-created-golden-era-quarterback-stats](https://www.insidehook.com/article/sports/nfl-rule-changes-created-golden-era-quarterback-stats)
+* DeArdo, B. (2019, June 26). Steelers legend Mel Blount forever changed the NFL. Retrieved December 17, 2021, from [https://247sports.com/nfl/pittsburgh-steelers/Article/Mel-Blount-Rule-Pittsburgh-Steelers--44461148/](https://247sports.com/nfl/pittsburgh-steelers/Article/Mel-Blount-Rule-Pittsburgh-Steelers--44461148/)
+* Evolution of the NFL Rules: NFL Football Operations. (n.d.). Retrieved December 17, 2021, from [https://operations.nfl.com/the-rules/evolution-of-the-nfl-rules/](https://operations.nfl.com/the-rules/evolution-of-the-nfl-rules/)
+* Fiorillo, S. (2018, October 29). History of the NFL: From the 1890s to the Present. Retrieved December 18, 2021, from [https://www.thestreet.com/lifestyle/sports/nfl-history-14761022](https://www.thestreet.com/lifestyle/sports/nfl-history-14761022)
+* Foster, D. (2009, April 21). How the "Brady Rule" Will Kill Football. Retrieved December 18, 2021, from [https://bleacherreport.com/articles/160081-how-the-brady-rule-will-kill-football](https://bleacherreport.com/articles/160081-how-the-brady-rule-will-kill-football)
+* Gasper, C. L. (2009, March 24). Brady rule: Steps taken to protect QB's knees. *The Boston Globe*. Retrieved December 18, 2021, from [http://archive.boston.com/sports/football/patriots/articles/2009/03/24/brady_rule_steps_taken_to_protect_qbs_knees/](http://archive.boston.com/sports/football/patriots/articles/2009/03/24/brady_rule_steps_taken_to_protect_qbs_knees/)
+* Goodell, R. (2021, June 16). 2021 Official Playing Rules of the National Football League. Retrieved December 19, 2021, from [https://operations.nfl.com/media/5427/2021-nfl-rulebook.pdf](https://operations.nfl.com/media/5427/2021-nfl-rulebook.pdf)
+* Grolemund, G. (2014, July 16). Introduction to R Markdown. Retrieved from [https://rmarkdown.rstudio.com/articles_intro.html](https://rmarkdown.rstudio.com/articles_intro.html)
+* *NFL Passing Yards Single-Season Leaders*. (n.d.). Retrieved December 14, 2021, from [https://www.pro-football-reference.com/leaders/pass_yds_single_season.htm](https://www.pro-football-reference.com/leaders/pass_yds_single_season.htm).
+* pandas (version 1.3.4) [Computer software]. (2021, October 17). Retrieved December 10, 2021, from [https://pandas.pydata.org/](https://pandas.pydata.org/)
+* Pattani, A. (2012, September 15). Expected points and EPA explained. Retrieved December 17, 2021, from [https://www.espn.com/nfl/story/_/id/8379024/nfl-explaining-expected-points-metric](https://www.espn.com/nfl/story/_/id/8379024/nfl-explaining-expected-points-metric)
+* PlexusGroupe. (2014, March 29). Happy anniversary, 16-game schedule. Retrieved December 18, 2021, from [https://profootballtalk.nbcsports.com/2014/03/29/happy-anniversary-16-game-schedule/](https://profootballtalk.nbcsports.com/2014/03/29/happy-anniversary-16-game-schedule/)
+* Qasim, Q. (2020, July 27). Regression Discontinuity (K. Stevens, Ed.). Retrieved December 19, 2021, from [https://www.betterevaluation.org/en/evaluation-options/regressiondiscontinuity](https://www.betterevaluation.org/en/evaluation-options/regressiondiscontinuity)
+* Ruiz, S. (2019, September 4). After the Boom: How NFL defenses fell so far behind modern offenses. Retrieved December 17, 2021, from [https://ftw.usatoday.com/2019/09/nfl-defense-fell-behind-modern-offense](https://ftw.usatoday.com/2019/09/nfl-defense-fell-behind-modern-offense)
+* Schalter, T. (2013, July 9). How NFL Offenses Have Transformed over the Past Decade. Retrieved December 17, 2021, from [https://bleacherreport.com/articles/1697407-how-nfl-offenses-have-transformed-over-the-past-decade](https://bleacherreport.com/articles/1697407-how-nfl-offenses-have-transformed-over-the-past-decade)
+* Springer, S. (2008, September 11). Brady has both ACL and MCL tears. *The Boston Globe*. Retrieved December 17, 2021, from [http://archive.boston.com/sports/articles/2008/09/11/brady_has_both_acl_and_mcl_tears/](http://archive.boston.com/sports/articles/2008/09/11/brady_has_both_acl_and_mcl_tears/)
+* Super Bowl LIV Draws Nearly 100 Million TV Viewers, 44 Million Social Media Interactions. (2020, February 03). Retrieved December 3, 2021, from [https://www.nielsen.com/us/en/press-releases/2020/super-bowl-liv-draws-nearly-100-million-tv-viewers-44-million-social-media-interactions/](https://www.nielsen.com/us/en/press-releases/2020/super-bowl-liv-draws-nearly-100-million-tv-viewers-44-million-social-media-interactions/)
+* Tables. (n.d.). Retrieved from [https://rmarkdown.rstudio.com/lesson-7.html](https://rmarkdown.rstudio.com/lesson-7.html)
+* *Tom Brady 2008 Game Log*. (n.d.). Retrieved December 14, 2021, from [https://www.pro-football-reference.com/players/B/BradTo00/gamelog/2008/](https://www.pro-football-reference.com/players/B/BradTo00/gamelog/2008/).
+* Zhu, H. (2019, March 15). Best Practice for newline in LaTeX table. Retrieved December 17, 2021, from [http://haozhu233.github.io/kableExtra/best_practice_for_newline_in_latex_table.pdf](http://haozhu233.github.io/kableExtra/best_practice_for_newline_in_latex_table.pdf)
+* Zhu, H. (2020, October 22). Create Awesome LaTeX Table with knitr::kable and kableExtra. Retrieved December 17, 2021, from [http://haozhu233.github.io/kableExtra/awesome_table_in_pdf.pdf](http://haozhu233.github.io/kableExtra/awesome_table_in_pdf.pdf)
+
+\newpage
+# Appendix
+
+## Ethics Statement
+
+Throughout the creation of this report, we attempted to act ethically while performing our statistical analyses on the data which we had collected. 
+
+The ethical consideration which had the greatest effect on the creation of this report was the idea of reproducibility with the data which we had collected. Throughout the creation and writing of this report, we have attempted to communicate each step of our analyses as clearly as possible, so that others can easily perform the same analyses on their own. In this report, we gave explicit details on the source of the data which we used throughout the report the report, as well as specific information on the process we used to collect our data from the [Pro Football Reference](https://www.pro-football-reference.com/) website.
+
+In addition to giving information on the sources of the data which we used, we explained the steps in our cleaning process in order to transform the data which we had initially collected into the data which was used throughout the analyses in the report. These data cleaning steps were vital to our process in compiling the report and performing our statistical analyses, and the work which we have shown throughout this report would not have been possible if not for the data cleaning procedures described in the **Data Cleaning** section above. Reproducibility is an important ethical consideration for all statisticians to have, as ensuring that your work can be replicated by others helps to ensure that you have not done anything unethical, such as p-hacking, as readers should be able to retrace your steps, if they are given the same data, and they should be able to arrive at the same results. Beyond explaining our processes once we had collected the data, we have also explained how to collect the exact dataset which we used from [Pro Football Reference](https://www.pro-football-reference.com/), which helps ensure that others can perform the same procedures as we have done.
+
+Another major ethical consideration which affected this report was the choice to use freely-available data. There are websites on the internet, such as [Pro Football Focus](https://www.pff.com/)(PFF) whose analyses are well respected in football analytics, as they offer "premium statistics" which are not readily available on other websites. However, a subscription to PFF is expensive; if we were to include PFF's advanced NFL statistics in this report, then the information in our report may not be accessible to the general public, as people who do not have access to PFF's services would not be able to collect the same data as we had collected. [Pro Football Reference](https://www.pro-football-reference.com/), the source of the data used in this report, is an entirely free-to-use online database, which is easily accessible. We chose to source our data exclusively from open data resources such as [Pro Football Reference](https://www.pro-football-reference.com/) to ensure that there was no 'paywall' preventing others from accessing the data which we had analyzed.
+
+## Supplementary Materials
+
+The following table is a glimpse of the dataset which we used in our analyses. The data in this dataset was collected using the `sportsipy` Python API (Clark, 2018), and the data was then cleaned in R as described in the **Data Cleaning** section of the report.
+
+```{r, echo=FALSE}
+glimpse(team_pergame %>% select(-after_1978, -after_1994, -after_2009))
+```

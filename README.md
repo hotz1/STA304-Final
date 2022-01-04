@@ -8,3 +8,5 @@ For my project, I collected data from [Pro Football Reference](https://www.pro-f
 The data was collected using Python as shown in the .ipynb file which is attached in this repo. However, all statistical analyses were done using R, and these analyses are detailed in the RMarkdown file in this repo. This file was also 'knitted' to a PDF, which is attached to this repository, and is easier to read and digest, but does not show the code used in the analyses.
 
 The CSV file in this repo contains the data collected using the `sportsipy` API in Python, and this file was imported directly into R for use in the analyses, as shown in the RMarkdown document.
+
+Lastly, the "Final Project Draft" PDF document is a rough draft with some details of the assignment when the project was in its early planning phase. The analyses which were carried out do not perfectly match this draft document, but this document is still useful as a look at the motivation behind this project and the potential importance of the  results of this project.
